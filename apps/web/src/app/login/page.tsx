@@ -15,23 +15,30 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-    const body = await response.json();
-    if (!response.ok) {
-      setError(body.message ?? 'ログインに失敗しました');
+      const rawBody = await response.text();
+      const body = rawBody ? (JSON.parse(rawBody) as { message?: string }) : {};
+
+      if (!response.ok) {
+        setError(body.message ?? 'ログインに失敗しました');
+        return;
+      }
+
+      router.push('/dashboard');
+      router.refresh();
+    } catch {
+      setError('ログイン通信でエラーが発生しました。数秒待って再試行してください。');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    router.push('/dashboard');
-    router.refresh();
   }
 
   return (
