@@ -1,0 +1,44 @@
+{
+  "records": [
+    {
+      "source": "sample_recording",
+      "eventId": "rec_evt_1001",
+      "recordingSourceType": "external_url",
+      "mediaUrl": "https://example.local/recordings/sample-1001",
+      "transcriptText": "課題の優先順位と導入要件を確認し、次回提案レビューの合意を実施。",
+      "language": "ja",
+      "metadata": {
+        "provider": "mock-recorder",
+        "ingestedBy": "seed"
+      },
+      "activitySource": "sample_crm",
+      "activityEventId": "crm_evt_1001",
+      "user": {
+        "email": "rep@local.test"
+      },
+      "deal": {
+        "externalRef": "deal-001"
+      }
+    },
+    {
+      "source": "sample_recording",
+      "eventId": "rec_evt_1002",
+      "recordingSourceType": "external_url",
+      "mediaUrl": "https://example.local/recordings/sample-1002",
+      "transcriptText": "提案条件の確認と、追加ヒアリング項目の合意を実施。",
+      "language": "ja",
+      "metadata": {
+        "provider": "mock-recorder",
+        "ingestedBy": "seed"
+      },
+      "activitySource": "sample_crm",
+      "activityEventId": "crm_evt_1003",
+      "user": {
+        "email": "rep@local.test"
+      },
+      "deal": {
+        "externalRef": "deal-002"
+      }
+    }
+  ]
+}

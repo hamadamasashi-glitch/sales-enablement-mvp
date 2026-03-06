@@ -1,0 +1,143 @@
+:root {
+  color-scheme: light;
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  --bg: #f2f7fb;
+  --card: #ffffff;
+  --line: #d6e2ee;
+  --text: #14202b;
+  --accent: #1363df;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top left, #e4f0ff, var(--bg));
+  color: var(--text);
+}
+
+main {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: min(760px, 96vw);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.input,
+.button,
+.select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.button {
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.button.secondary {
+  background: #6b7b8b;
+}
+
+.row {
+  display: grid;
+  gap: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.muted {
+  color: #5f6f7e;
+  font-size: 13px;
+}
+
+.card.wide {
+  width: min(1180px, 96vw);
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.sub-section {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.metric-card {
+  width: 100%;
+  padding: 16px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th,
+.table td {
+  border: 1px solid var(--line);
+  text-align: left;
+  padding: 8px;
+  vertical-align: top;
+}
+
+.table th {
+  background: #eef4fb;
+}
+
+.bar-chart {
+  display: grid;
+  gap: 8px;
+}
+
+.bar-item {
+  display: grid;
+  gap: 4px;
+}
+
+.bar-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #e1ebf5;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: #1f6feb;
+}
+
+.bar-fill.secondary {
+  background: #24a148;
+}

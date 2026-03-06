@@ -1,0 +1,299 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  REP
+}
+
+enum DealStage {
+  DISCOVERY
+  PROPOSAL
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum ActivityType {
+  CALL
+  EMAIL
+  MEETING
+}
+
+enum RecordingSourceType {
+  EXTERNAL_URL
+  UPLOAD
+}
+
+enum ContentType {
+  VIDEO
+  DOC
+  QUIZ
+}
+
+enum ContentDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum RecommendationStatus {
+  RECOMMENDED
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+}
+
+enum LearningStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model User {
+  id                   String            @id @default(uuid())
+  email                String            @unique
+  passwordHash         String
+  name                 String
+  role                 Role              @default(REP)
+  managerId            String?
+  manager              User?             @relation("UserManager", fields: [managerId], references: [id])
+  reports              User[]            @relation("UserManager")
+  managedTeams         Team[]            @relation("TeamManager")
+  teamMemberships      TeamMembership[]
+  ownedDeals           Deal[]            @relation("DealOwner")
+  activities           CrmActivity[]     @relation("ActivityActor")
+  evaluatedScorecards  Scorecard[]       @relation("EvaluatedUser")
+  evaluatorScorecards  Scorecard[]       @relation("EvaluatorUser")
+  recommendations      Recommendation[]
+  learningProgresses   LearningProgress[]
+  auditLogs            AuditLog[]        @relation("AuditActor")
+  createdScorecardTemplates ScorecardTemplate[] @relation("TemplateCreator")
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+}
+
+model Team {
+  id            String           @id @default(uuid())
+  name          String
+  managerUserId String?
+  managerUser   User?            @relation("TeamManager", fields: [managerUserId], references: [id])
+  memberships   TeamMembership[]
+  deals         Deal[]
+  createdAt     DateTime         @default(now())
+}
+
+model TeamMembership {
+  id             String   @id @default(uuid())
+  teamId         String
+  userId         String
+  membershipRole String   @default("MEMBER")
+  team           Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
+
+model Deal {
+  id                String        @id @default(uuid())
+  externalRef       String?       @unique
+  title             String
+  ownerUserId       String
+  teamId            String
+  stage             DealStage     @default(DISCOVERY)
+  amount            Int?
+  expectedCloseDate DateTime?
+  nextActionDue     DateTime?
+  ownerUser         User          @relation("DealOwner", fields: [ownerUserId], references: [id])
+  team              Team          @relation(fields: [teamId], references: [id])
+  activities        CrmActivity[]
+  recordings        Recording[]
+  scorecards        Scorecard[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model CrmActivity {
+  id            String       @id @default(uuid())
+  source        String       @default("manual")
+  externalEventId String?
+  dealId        String
+  actorUserId   String
+  type          ActivityType
+  occurredAt    DateTime
+  durationSec   Int?
+  outcome       String?
+  nextActionDue DateTime?
+  metadata      Json?
+  deal          Deal         @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  actorUser     User         @relation("ActivityActor", fields: [actorUserId], references: [id])
+  recording     Recording?
+  createdAt     DateTime     @default(now())
+
+  @@unique([source, externalEventId])
+}
+
+model Recording {
+  id             String              @id @default(uuid())
+  source         String              @default("manual")
+  externalEventId String?
+  dealId         String
+  activityId     String?             @unique
+  sourceType     RecordingSourceType @default(EXTERNAL_URL)
+  mediaUrl       String?
+  transcriptText String?
+  language       String?
+  metadata       Json?
+  deal           Deal                @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  activity       CrmActivity?        @relation(fields: [activityId], references: [id], onDelete: SetNull)
+  scorecards     Scorecard[]
+  ingestedAt     DateTime            @default(now())
+
+  @@unique([source, externalEventId])
+}
+
+model Scorecard {
+  id              String               @id @default(uuid())
+  dealId          String
+  recordingId     String?
+  templateId      String?
+  evaluatedUserId String
+  evaluatorUserId String
+  rubricVersion   String               @default("v1")
+  totalScore      Decimal              @db.Decimal(5, 2)
+  overallComment  String?
+  evaluatedAt     DateTime             @default(now())
+  deal            Deal                 @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  recording       Recording?           @relation(fields: [recordingId], references: [id], onDelete: SetNull)
+  template        ScorecardTemplate?   @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  evaluatedUser   User                 @relation("EvaluatedUser", fields: [evaluatedUserId], references: [id])
+  evaluatorUser   User                 @relation("EvaluatorUser", fields: [evaluatorUserId], references: [id])
+  itemScores      ScorecardItemScore[]
+  categoryScores  ScorecardCategoryScore[]
+  recommendations Recommendation[]
+}
+
+model ScorecardItemScore {
+  id           String    @id @default(uuid())
+  scorecardId  String
+  templateItemId String?
+  category     String    @default("GENERAL")
+  criterionKey String
+  score        Int
+  comment      String?
+  weakTag      String?
+  scorecard    Scorecard @relation(fields: [scorecardId], references: [id], onDelete: Cascade)
+  templateItem ScorecardTemplateItem? @relation(fields: [templateItemId], references: [id], onDelete: SetNull)
+}
+
+model ScorecardCategoryScore {
+  id         String   @id @default(uuid())
+  scorecardId String
+  category   String
+  score      Decimal  @db.Decimal(4, 2)
+  scorecard  Scorecard @relation(fields: [scorecardId], references: [id], onDelete: Cascade)
+
+  @@unique([scorecardId, category])
+}
+
+model ScorecardTemplate {
+  id              String                 @id @default(uuid())
+  name            String
+  version         String                 @default("v1")
+  isActive        Boolean                @default(false)
+  createdByUserId String?
+  createdByUser   User?                  @relation("TemplateCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  items           ScorecardTemplateItem[]
+  scorecards      Scorecard[]
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+}
+
+model ScorecardTemplateItem {
+  id          String            @id @default(uuid())
+  templateId  String
+  criterionKey String
+  label       String
+  description String?
+  category    String
+  weight      Int               @default(10)
+  sortOrder   Int               @default(0)
+  isRequired  Boolean           @default(true)
+  template    ScorecardTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  itemScores  ScorecardItemScore[]
+
+  @@unique([templateId, criterionKey])
+}
+
+model KnowledgeContent {
+  id               String                 @id @default(uuid())
+  title            String
+  contentType      ContentType
+  difficulty       ContentDifficulty
+  estimatedMinutes Int
+  url              String
+  status           String                 @default("PUBLISHED")
+  tags             KnowledgeContentTag[]
+  recommendations  Recommendation[]
+  learningProgress LearningProgress[]
+  createdAt        DateTime               @default(now())
+}
+
+model KnowledgeContentTag {
+  id        String           @id @default(uuid())
+  contentId String
+  tag       String
+  content   KnowledgeContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, tag])
+}
+
+model Recommendation {
+  id          String               @id @default(uuid())
+  userId      String
+  scorecardId String
+  contentId   String
+  reason      String
+  status      RecommendationStatus @default(RECOMMENDED)
+  generatedAt DateTime             @default(now())
+  completedAt DateTime?
+  user        User                 @relation(fields: [userId], references: [id])
+  scorecard   Scorecard            @relation(fields: [scorecardId], references: [id], onDelete: Cascade)
+  content     KnowledgeContent     @relation(fields: [contentId], references: [id])
+  learningProgresses LearningProgress[]
+}
+
+model LearningProgress {
+  id               String         @id @default(uuid())
+  userId           String
+  contentId        String
+  recommendationId String?
+  status           LearningStatus @default(NOT_STARTED)
+  spentMinutes     Int            @default(0)
+  completedAt      DateTime?
+  user             User           @relation(fields: [userId], references: [id])
+  content          KnowledgeContent @relation(fields: [contentId], references: [id])
+  recommendation   Recommendation? @relation(fields: [recommendationId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, contentId])
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorUserId  String?
+  action       String
+  resourceType String
+  resourceId   String?
+  beforeJson   Json?
+  afterJson    Json?
+  ipHash       String?
+  createdAt    DateTime @default(now())
+  actorUser    User?    @relation("AuditActor", fields: [actorUserId], references: [id])
+}

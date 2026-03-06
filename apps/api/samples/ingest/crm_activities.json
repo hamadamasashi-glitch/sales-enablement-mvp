@@ -1,0 +1,73 @@
+{
+  "records": [
+    {
+      "source": "sample_crm",
+      "eventId": "crm_evt_1001",
+      "activityType": "meeting",
+      "occurredAt": "2026-03-01T01:30:00Z",
+      "durationSec": 1800,
+      "outcome": "next_step_agreed",
+      "nextActionDue": "2026-03-08T00:00:00Z",
+      "metadata": {
+        "channel": "video_conference",
+        "ingestedBy": "seed"
+      },
+      "user": {
+        "email": "rep@local.test"
+      },
+      "deal": {
+        "externalRef": "deal-001"
+      }
+    },
+    {
+      "source": "sample_crm",
+      "eventId": "crm_evt_1002",
+      "activityType": "email",
+      "occurredAt": "2026-03-02T04:00:00Z",
+      "outcome": "proposal_follow_sent",
+      "metadata": {
+        "template": "proposal_followup"
+      },
+      "user": {
+        "email": "rep@local.test"
+      },
+      "deal": {
+        "externalRef": "deal-001"
+      }
+    },
+    {
+      "source": "sample_crm",
+      "eventId": "crm_evt_1003",
+      "activityType": "call",
+      "occurredAt": "2026-03-03T06:00:00Z",
+      "durationSec": 900,
+      "outcome": "follow_call_completed",
+      "metadata": {
+        "callType": "check_in"
+      },
+      "user": {
+        "email": "rep@local.test"
+      },
+      "deal": {
+        "externalRef": "deal-002"
+      }
+    },
+    {
+      "source": "sample_crm",
+      "eventId": "crm_evt_1004",
+      "activityType": "meeting",
+      "occurredAt": "2026-02-15T02:00:00Z",
+      "durationSec": 1500,
+      "outcome": "initial_discovery",
+      "metadata": {
+        "channel": "onsite"
+      },
+      "user": {
+        "email": "rep@local.test"
+      },
+      "deal": {
+        "externalRef": "deal-003"
+      }
+    }
+  ]
+}

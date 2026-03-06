@@ -1,0 +1,10 @@
+{
+  "name": "sales-enablement-mvp",
+  "private": true,
+  "scripts": {
+    "lint": "npm --prefix apps/api run lint && npm --prefix apps/web run lint",
+    "test": "npm --prefix apps/api run test && npm --prefix apps/web run test",
+    "seed": "npm --prefix apps/api run seed",
+    "db:migrate": "npm --prefix apps/api run db:migrate"
+  }
+}

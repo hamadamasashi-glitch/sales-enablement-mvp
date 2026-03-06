@@ -1,0 +1,37 @@
+name: Repository Hygiene
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tracked-files-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check forbidden tracked files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          FORBIDDEN_REGEX='(^|/)(node_modules/|dist/|coverage/|\.next/|\.env$|\.DS_Store$|.*\.tsbuildinfo$)'
+
+          mapfile -t MATCHED < <(
+            git ls-files | grep -E "${FORBIDDEN_REGEX}" | grep -Ev '(^|/)\.env\.example$' || true
+          )
+
+          if [ "${#MATCHED[@]}" -gt 0 ]; then
+            echo "Forbidden files are tracked in repository:"
+            printf '%s\n' "${MATCHED[@]}"
+            echo ""
+            echo "Please remove generated/secrets files from tracking."
+            exit 1
+          fi
+
+          echo "Repository hygiene check passed."
