@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -9,6 +9,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('password123');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialError = params.get('error');
+    if (initialError) {
+      setError(initialError);
+    }
+  }, []);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,11 +54,18 @@ export default function LoginPage() {
       <section className="card row" style={{ maxWidth: 420 }}>
         <h1>営業可視化MVP ログイン</h1>
         <p className="muted">seed済みのサンプルユーザーでログインできます。</p>
-        <form className="row" onSubmit={onSubmit}>
-          <input className="input" type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+        <form className="row" action="/api/auth/login-form" method="post" onSubmit={onSubmit}>
+          <input
+            className="input"
+            type="email"
+            name="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
           <input
             className="input"
             type="password"
+            name="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
