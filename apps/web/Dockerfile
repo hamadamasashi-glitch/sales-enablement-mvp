@@ -8,4 +8,4 @@ COPY . .
 RUN npm run build
 
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 PORT=3000 node .next/standalone/server.js"]
